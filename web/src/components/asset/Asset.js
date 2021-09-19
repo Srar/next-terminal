@@ -50,6 +50,7 @@ const confirm = Modal.confirm;
 const {Search} = Input;
 const {Content} = Layout;
 const {Title, Text} = Typography;
+const pageSizeStorage = "AssetPageSize"
 
 class Asset extends Component {
 
@@ -90,6 +91,7 @@ class Asset extends Component {
 
     async componentDidMount() {
 
+        this.loadQueryParamsFromStorage();
         this.loadTableData();
 
         let result = await request.get('/tags');
@@ -108,7 +110,18 @@ class Asset extends Component {
         } else {
             message.error('删除失败 :( ' + result.message, 10);
         }
+    }
 
+    // 从本地存储中加载配置信息 
+    loadQueryParamsFromStorage() {
+        let queryParams = this.state.queryParams;
+        
+        let pageSize = localStorage.getItem(pageSizeStorage);
+        if (pageSize) {
+            queryParams.pageSize = pageSize;
+        }
+
+        this.setState({ queryParams });
     }
 
     async loadTableData(queryParams) {
@@ -152,6 +165,7 @@ class Asset extends Component {
         let queryParams = this.state.queryParams;
         queryParams.pageIndex = pageIndex;
         queryParams.pageSize = pageSize;
+        localStorage.setItem(pageSizeStorage, pageSize.toString());
 
         this.setState({
             queryParams: queryParams
@@ -709,8 +723,13 @@ class Asset extends Component {
                                             this.inputRefOfIp.current.setValue('');
                                             this.setState({
                                                 selectedTags: []
-                                            })
-                                            this.loadTableData({pageIndex: 1, pageSize: 10, protocol: '', tags: ''})
+                                            });
+                                            this.loadTableData({
+                                                pageIndex: 1, 
+                                                pageSize: this.state.queryParams.pageSize, 
+                                                protocol: '', 
+                                                tags: '',
+                                            });
                                         }}>
 
                                         </Button>

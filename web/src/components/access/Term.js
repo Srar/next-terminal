@@ -62,7 +62,7 @@ class Term extends Component {
 
         term.attachCustomKeyEventHandler((e) => {
             let selection = term.getSelection();
-            if (e.ctrlKey && e.key === 'c' && selection != "") {
+            if (e.ctrlKey && e.key === 'c' && selection !== "") {
                 return false;
             }
             return !(e.ctrlKey && e.key === 'v');
