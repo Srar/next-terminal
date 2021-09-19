@@ -1,30 +1,58 @@
 package term
 
 import (
-	"bytes"
-	"sync"
+	"errors"
 )
 
+var ErrNextWriterHasBeenClosed = errors.New("the nextWriter has been closed. ")
+
 type NextWriter struct {
-	b  bytes.Buffer
-	mu sync.Mutex
+	isClosed bool
+	buffer   chan []byte
 }
 
-func (w *NextWriter) Write(p []byte) (int, error) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	return w.b.Write(p)
+func NewNextWriter() *NextWriter {
+	return &NextWriter{
+		isClosed: false,
+		buffer:   make(chan []byte, 16),
+	}
+}
+
+func (w *NextWriter) Write(p []byte) (bytes int, err error) {
+	// fast path
+	if w.isClosed {
+		return 0, ErrNextWriterHasBeenClosed
+	}
+
+	defer func() {
+		if recover() != nil {
+			bytes = 0
+			err = ErrNextWriterHasBeenClosed
+		}
+	}()
+
+	w.buffer <- p
+
+	return len(p), nil
 }
 
 func (w *NextWriter) Read() ([]byte, int, error) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	p := w.b.Bytes()
-	buf := make([]byte, len(p))
-	read, err := w.b.Read(buf)
-	w.b.Reset()
-	if err != nil {
-		return nil, 0, err
+	// fast path
+	if w.isClosed {
+		return nil, 0, ErrNextWriterHasBeenClosed
 	}
-	return buf, read, err
+
+	b, opened := <-w.buffer
+	if !opened {
+		return nil, 0, ErrNextWriterHasBeenClosed
+	}
+
+	return b, len(b), nil
+}
+
+func (w *NextWriter) Close() {
+	if !w.isClosed {
+		w.isClosed = true
+		close(w.buffer)
+	}
 }

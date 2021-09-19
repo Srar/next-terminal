@@ -39,9 +39,9 @@ func NewNextTerminal(ip string, port int, username, password, privateKey, passph
 		return nil, err
 	}
 
-	var nextWriter NextWriter
-	sshSession.Stdout = &nextWriter
-	sshSession.Stderr = &nextWriter
+	nextWriter := NewNextWriter()
+	sshSession.Stdout = nextWriter
+	sshSession.Stderr = nextWriter
 
 	stdinPipe, err := sshSession.StdinPipe()
 	if err != nil {
@@ -65,7 +65,7 @@ func NewNextTerminal(ip string, port int, username, password, privateKey, passph
 		SshSession: sshSession,
 		Recorder:   recorder,
 		StdinPipe:  stdinPipe,
-		NextWriter: &nextWriter,
+		NextWriter: nextWriter,
 	}
 
 	return &terminal, nil
@@ -87,6 +87,10 @@ func (ret *NextTerminal) Read() ([]byte, int, error) {
 }
 
 func (ret *NextTerminal) Close() error {
+	if ret.NextWriter != nil {
+		ret.NextWriter.Close()
+	}
+
 	if ret.SshSession != nil {
 		return ret.SshSession.Close()
 	}

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"path"
 	"strconv"
-	"time"
 
 	"next-terminal/pkg/constant"
 	"next-terminal/pkg/global"
@@ -230,7 +229,6 @@ func ReadMessage(nextTerminal *term.NextTerminal, quitChan chan bool, ws *websoc
 				}
 				_ = WriteMessage(ws, msg)
 			}
-			time.Sleep(time.Duration(10) * time.Millisecond)
 		}
 	}
 }
