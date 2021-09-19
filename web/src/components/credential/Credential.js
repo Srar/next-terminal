@@ -426,7 +426,7 @@ class Credential extends Component {
 
 
                             <Menu.Item key="2">
-                                <Button type="text" size='small'
+                                <Button type="text" size='small' block
                                         disabled={!hasPermission(record['owner'])}
                                         onClick={async () => {
                                             await this.handleShowSharer(record);
@@ -435,7 +435,7 @@ class Credential extends Component {
 
                             <Menu.Divider/>
                             <Menu.Item key="3">
-                                <Button type="text" size='small' danger
+                                <Button type="text" size='small' danger block
                                         disabled={!hasPermission(record['owner'])}
                                         onClick={() => this.showDeleteConfirm(record.id, record.name)}>删除</Button>
                             </Menu.Item>

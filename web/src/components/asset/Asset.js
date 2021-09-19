@@ -576,20 +576,20 @@ class Asset extends Component {
                     const menu = (
                         <Menu>
                             <Menu.Item key="1">
-                                <Button type="text" size='small'
+                                <Button type="text" size='small' block
                                         disabled={!hasPermission(record['owner'])}
                                         onClick={() => this.update(record.id)}>编辑</Button>
                             </Menu.Item>
 
                             <Menu.Item key="2">
-                                <Button type="text" size='small'
+                                <Button type="text" size='small' block
                                         disabled={!hasPermission(record['owner'])}
                                         onClick={() => this.copy(record.id)}>复制</Button>
                             </Menu.Item>
 
                             {isAdmin() ?
                                 <Menu.Item key="4">
-                                    <Button type="text" size='small'
+                                    <Button type="text" size='small' block
                                             disabled={!hasPermission(record['owner'])}
                                             onClick={() => {
                                                 this.handleSearchByNickname('')
@@ -611,7 +611,7 @@ class Asset extends Component {
 
 
                             <Menu.Item key="5">
-                                <Button type="text" size='small'
+                                <Button type="text" size='small' block
                                         disabled={!hasPermission(record['owner'])}
                                         onClick={async () => {
                                             await this.handleShowSharer(record);
@@ -620,7 +620,7 @@ class Asset extends Component {
 
                             <Menu.Divider/>
                             <Menu.Item key="6">
-                                <Button type="text" size='small' danger
+                                <Button type="text" size='small' danger block
                                         disabled={!hasPermission(record['owner'])}
                                         onClick={() => this.showDeleteConfirm(record.id, record.name)}>删除</Button>
                             </Menu.Item>

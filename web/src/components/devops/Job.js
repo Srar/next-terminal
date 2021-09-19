@@ -351,12 +351,12 @@ class Job extends Component {
                 const menu = (
                     <Menu>
                         <Menu.Item key="0">
-                            <Button type="text" size='small'
+                            <Button type="text" size='small' block
                                     onClick={() => this.showModal('更新计划任务', record)}>编辑</Button>
                         </Menu.Item>
 
                         <Menu.Item key="2">
-                            <Button type="text" size='small'
+                            <Button type="text" size='small' block
                                     onClick={async () => {
                                         this.setState({
                                             logVisible: true,
@@ -377,7 +377,7 @@ class Job extends Component {
 
                         <Menu.Divider/>
                         <Menu.Item key="3">
-                            <Button type="text" size='small' danger
+                            <Button type="text" size='small' danger block
                                     onClick={() => this.showDeleteConfirm(record.id, record.name)}>删除</Button>
                         </Menu.Item>
                     </Menu>

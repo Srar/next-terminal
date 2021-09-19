@@ -427,14 +427,14 @@ class DynamicCommand extends Component {
                 const menu = (
                     <Menu>
                         <Menu.Item key="0">
-                            <Button type="text" size='small'
+                            <Button type="text" size='small' block
                                     disabled={!hasPermission(record['owner'])}
                                     onClick={() => this.showModal('更新指令', record)}>编辑</Button>
                         </Menu.Item>
 
                         {isAdmin() ?
                             <Menu.Item key="1">
-                                <Button type="text" size='small'
+                                <Button type="text" size='small' block
                                         disabled={!hasPermission(record['owner'])}
                                         onClick={() => {
                                             this.handleSearchByNickname('')
@@ -456,7 +456,7 @@ class DynamicCommand extends Component {
 
 
                         <Menu.Item key="2">
-                            <Button type="text" size='small'
+                            <Button type="text" size='small' block
                                     disabled={!hasPermission(record['owner'])}
                                     onClick={async () => {
                                         await this.handleShowSharer(record);
@@ -465,7 +465,7 @@ class DynamicCommand extends Component {
 
                         <Menu.Divider/>
                         <Menu.Item key="3">
-                            <Button type="text" size='small' danger
+                            <Button type="text" size='small' danger block
                                     disabled={!hasPermission(record['owner'])}
                                     onClick={() => this.showDeleteConfirm(record.id, record.name)}>删除</Button>
                         </Menu.Item>
