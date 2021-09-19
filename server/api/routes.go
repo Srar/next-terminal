@@ -407,20 +407,27 @@ func SetupDB() *gorm.DB {
 		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 			Logger: logMode,
 		})
+		if err != nil {
+			log.WithError(err).Panic("连接数据库异常")
+		}
+		if err := db.Set("gorm:table_options", "CHARSET=utf8 COLLATE utf8_general_ci").AutoMigrate(&model.User{}, &model.Asset{}, &model.AssetAttribute{}, &model.Session{}, &model.Command{},
+			&model.Credential{}, &model.Property{}, &model.ResourceSharer{}, &model.UserGroup{}, &model.UserGroupMember{},
+			&model.LoginLog{}, &model.Num{}, &model.Job{}, &model.JobLog{}, &model.AccessSecurity{}); err != nil {
+			log.WithError(err).Panic("初始化数据库表结构异常")
+		}
 	} else {
 		db, err = gorm.Open(sqlite.Open(global.Config.Sqlite.File), &gorm.Config{
 			Logger: logMode,
 		})
+		if err != nil {
+			log.WithError(err).Panic("连接数据库异常")
+		}
+		if err := db.AutoMigrate(&model.User{}, &model.Asset{}, &model.AssetAttribute{}, &model.Session{}, &model.Command{},
+			&model.Credential{}, &model.Property{}, &model.ResourceSharer{}, &model.UserGroup{}, &model.UserGroupMember{},
+			&model.LoginLog{}, &model.Num{}, &model.Job{}, &model.JobLog{}, &model.AccessSecurity{}); err != nil {
+			log.WithError(err).Panic("初始化数据库表结构异常")
+		}
 	}
 
-	if err != nil {
-		log.WithError(err).Panic("连接数据库异常")
-	}
-
-	if err := db.AutoMigrate(&model.User{}, &model.Asset{}, &model.AssetAttribute{}, &model.Session{}, &model.Command{},
-		&model.Credential{}, &model.Property{}, &model.ResourceSharer{}, &model.UserGroup{}, &model.UserGroupMember{},
-		&model.LoginLog{}, &model.Num{}, &model.Job{}, &model.JobLog{}, &model.AccessSecurity{}); err != nil {
-		log.WithError(err).Panic("初始化数据库表结构异常")
-	}
 	return db
 }
