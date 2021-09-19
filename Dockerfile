@@ -9,8 +9,9 @@ WORKDIR /app
 COPY . .
 
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-RUN apk add gcc g++
+RUN apk add gcc g++ nodejs npm
 RUN go env && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -a -ldflags '-linkmode external -extldflags "-static"' -o next-terminal main.go
+RUN cd web && npm install --registry=https://mirrors.huaweicloud.com/repository/npm/ && npm run build
 
 FROM guacamole/guacd:1.3.0
 USER root
