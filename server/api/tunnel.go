@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"path"
 	"strconv"
 
@@ -24,7 +25,6 @@ const (
 )
 
 func TunEndpoint(c echo.Context) error {
-
 	ws, err := UpGrader.Upgrade(c.Response().Writer, c.Request(), nil)
 	if err != nil {
 		log.Errorf("升级为WebSocket协议失败：%v", err.Error())
@@ -158,26 +158,25 @@ func TunEndpoint(c echo.Context) error {
 		}
 	}
 
-	addr := propertyMap[guacd.Host] + ":" + propertyMap[guacd.Port]
+	tun := global.Tun{
+		Protocol:  session.Protocol,
+		Mode:      session.Mode,
+		WebSocket: ws,
+		Tunnel:    nil,
+	}
 
-	tunnel, err := guacd.NewTunnel(addr, configuration)
+	tunnelAddr := propertyMap[guacd.Host] + ":" + propertyMap[guacd.Port]
+	tun.Tunnel, err = guacd.NewTunnel(tunnelAddr, configuration)
 	if err != nil {
 		if connectionId == "" {
 			CloseSessionById(sessionId, NewTunnelError, err.Error())
 		}
 		log.Printf("建立连接失败: %v", err.Error())
-		return err
-	}
-
-	tun := global.Tun{
-		Protocol:  session.Protocol,
-		Mode:      session.Mode,
-		WebSocket: ws,
-		Tunnel:    tunnel,
+		tun.Close(NewTunnelError, fmt.Sprintf("Guacd实例连接失败: %v", err.Error()))
+		return nil
 	}
 
 	if len(session.ConnectionId) == 0 {
-
 		var observers []global.Tun
 		observable := global.Observable{
 			Subject:   &tun,
@@ -187,7 +186,7 @@ func TunEndpoint(c echo.Context) error {
 		global.Store.Set(sessionId, &observable)
 
 		sess := model.Session{
-			ConnectionId: tunnel.UUID,
+			ConnectionId: tun.Tunnel.UUID,
 			Width:        intWidth,
 			Height:       intHeight,
 			Status:       constant.Connecting,
@@ -211,7 +210,7 @@ func TunEndpoint(c echo.Context) error {
 
 	go func() {
 		for {
-			instruction, err := tunnel.Read()
+			instruction, err := tun.Tunnel.Read()
 			if err != nil {
 				if connectionId == "" {
 					CloseSessionById(sessionId, TunnelClosed, "远程连接关闭")
@@ -239,7 +238,7 @@ func TunEndpoint(c echo.Context) error {
 			}
 			break
 		}
-		_, err = tunnel.WriteAndFlush(message)
+		_, err = tun.Tunnel.WriteAndFlush(message)
 		if err != nil {
 			if connectionId == "" {
 				CloseSessionById(sessionId, TunnelClosed, "远程连接关闭")
