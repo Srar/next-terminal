@@ -89,18 +89,27 @@ func UserDeleteEndpoint(c echo.Context) error {
 		if account.ID == userId {
 			return Fail(c, -1, "不允许删除自身账户")
 		}
+
 		// 将用户强制下线
 		loginLogs, err := loginLogRepository.FindAliveLoginLogsByUserId(userId)
 		if err != nil {
 			return err
 		}
-
 		for j := range loginLogs {
 			global.Cache.Delete(loginLogs[j].ID)
 			if err := userService.Logout(loginLogs[j].ID); err != nil {
 				log.WithError(err).WithField("id:", loginLogs[j].ID).Error("Cache Deleted Error")
 				return Fail(c, 500, "强制下线错误")
 			}
+		}
+
+		// 关闭用户已经连接的Sessions
+		onlineSessions, err := sessionRepository.GetOnlineSessionsByUserID(userId)
+		if err != nil {
+			return err
+		}
+		for i := range onlineSessions {
+			CloseSessionById(onlineSessions[i].ID, ForcedDisconnect, "管理员强制关闭了此会话")
 		}
 
 		// 删除用户
