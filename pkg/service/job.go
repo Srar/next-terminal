@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"next-terminal/pkg/proxy"
 	"strings"
 	"time"
 
@@ -23,10 +24,22 @@ type JobService struct {
 	jobLogRepository     *repository.JobLogRepository
 	assetRepository      *repository.AssetRepository
 	credentialRepository *repository.CredentialRepository
+	proxiesRepository    *repository.ProxyRepository
 }
 
-func NewJobService(jobRepository *repository.JobRepository, jobLogRepository *repository.JobLogRepository, assetRepository *repository.AssetRepository, credentialRepository *repository.CredentialRepository) *JobService {
-	return &JobService{jobRepository: jobRepository, jobLogRepository: jobLogRepository, assetRepository: assetRepository, credentialRepository: credentialRepository}
+func NewJobService(
+	jobRepository *repository.JobRepository,
+	jobLogRepository *repository.JobLogRepository,
+	assetRepository *repository.AssetRepository,
+	credentialRepository *repository.CredentialRepository,
+	proxiesRepository *repository.ProxyRepository) *JobService {
+	return &JobService{
+		jobRepository:        jobRepository,
+		jobLogRepository:     jobLogRepository,
+		assetRepository:      assetRepository,
+		credentialRepository: credentialRepository,
+		proxiesRepository:    proxiesRepository,
+	}
 }
 
 func (r JobService) ChangeStatusById(id, status string) error {
@@ -173,6 +186,9 @@ func (r ShellJob) Run() {
 			passphrase = asset.Passphrase
 			ip         = asset.IP
 			port       = asset.Port
+
+			proxyType   proxy.Type
+			proxyConfig *proxy.Config
 		)
 
 		if asset.AccountType == "credential" {
@@ -192,10 +208,27 @@ func (r ShellJob) Run() {
 			}
 		}
 
+		if asset.ProxyID != "" {
+			p, err := r.jobService.proxiesRepository.FindById(asset.ProxyID)
+			if err != nil {
+				msgChan <- fmt.Sprintf("资产「%v」Shell执行失败，查询跳板代理失败「%v」", assets[i].Name, err.Error())
+				return
+			}
+			proxyType = p.Type
+			proxyConfig = &proxy.Config{
+				Host:     p.Host,
+				Port:     p.Port,
+				Username: p.Username,
+				Password: p.Password,
+				DialHost: ip,
+				DialPort: port,
+			}
+		}
+
 		go func() {
 
 			t1 := time.Now()
-			result, err := ExecCommandBySSH(metadataShell.Shell, ip, port, username, password, privateKey, passphrase)
+			result, err := ExecCommandBySSH(metadataShell.Shell, ip, port, proxyType, proxyConfig, username, password, privateKey, passphrase)
 			elapsed := time.Since(t1)
 			var msg string
 			if err != nil {
@@ -226,8 +259,8 @@ func (r ShellJob) Run() {
 	_ = r.jobService.jobLogRepository.Create(&jobLog)
 }
 
-func ExecCommandBySSH(cmd, ip string, port int, username, password, privateKey, passphrase string) (result string, err error) {
-	sshClient, err := term.NewSshClient(ip, port, username, password, privateKey, passphrase)
+func ExecCommandBySSH(cmd, ip string, port int, proxyType proxy.Type, proxyConfig *proxy.Config, username, password, privateKey, passphrase string) (result string, err error) {
+	sshClient, err := term.NewSshClient(ip, port, proxyType, proxyConfig, username, password, privateKey, passphrase)
 	if err != nil {
 		return "", err
 	}

@@ -71,8 +71,9 @@ class Asset extends Component {
         modalVisible: false,
         modalTitle: '',
         modalConfirmLoading: false,
-        credentials: [],
         tags: [],
+        proxies: [],
+        credentials: [],
         selectedTags: [],
         model: {},
         selectedRowKeys: [],
@@ -255,21 +256,26 @@ class Asset extends Component {
 
     async showModal(title, asset = {}) {
         // 并行请求
-        let getCredentials = request.get('/credentials');
-        let getTags = request.get('/tags');
+        const getTags = request.get('/tags');
+        const getProxies = request.get('/proxies')
+        const getCredentials = request.get('/credentials');
 
-        let credentials = [];
         let tags = [];
+        let proxies = [];
+        let credentials = [];
 
-        let r1 = await getCredentials;
-        let r2 = await getTags;
+        const tagsResult = await getTags;
+        const proxiesResult = await getProxies;
+        const redentialsResult = await getCredentials;
 
-        if (r1['code'] === 1) {
-            credentials = r1['data'];
+        if (tagsResult['code'] === 1) {
+            tags = tagsResult['data'];
         }
-
-        if (r2['code'] === 1) {
-            tags = r2['data'];
+        if (proxiesResult['code'] === 1) {
+            proxies = proxiesResult['data'];
+        }
+        if (redentialsResult['code'] === 1) {
+            credentials = redentialsResult['data'];
         }
 
         if (asset['tags'] && typeof (asset['tags']) === 'string') {
@@ -286,13 +292,12 @@ class Asset extends Component {
 
         asset['ignore-cert'] = asset['ignore-cert'] === 'true';
 
-        console.log(asset)
-
         this.setState({
             modalTitle: title,
             modalVisible: true,
-            credentials: credentials,
             tags: tags,
+            proxies: proxies,
+            credentials: credentials,
             model: asset
         });
     };
@@ -709,11 +714,11 @@ class Asset extends Component {
                                             value={this.state.queryParams.protocol ? this.state.queryParams.protocol : ''}
                                             style={{width: 100}}>
                                         <Select.Option value="">全部协议</Select.Option>
-                                        <Select.Option value="rdp">rdp</Select.Option>
-                                        <Select.Option value="ssh">ssh</Select.Option>
-                                        <Select.Option value="vnc">vnc</Select.Option>
-                                        <Select.Option value="telnet">telnet</Select.Option>
-                                        <Select.Option value="kubernetes">kubernetes</Select.Option>
+                                        <Select.Option value="rdp">RDP</Select.Option>
+                                        <Select.Option value="ssh">SSH</Select.Option>
+                                        <Select.Option value="vnc">VNC</Select.Option>
+                                        <Select.Option value="telnet">Telnet</Select.Option>
+                                        <Select.Option value="kubernetes">Kubernetes</Select.Option>
                                     </Select>
 
                                     <Tooltip title='重置查询'>
@@ -821,8 +826,9 @@ class Asset extends Component {
                                 handleOk={this.handleOk}
                                 handleCancel={this.handleCancelModal}
                                 confirmLoading={this.state.modalConfirmLoading}
-                                credentials={this.state.credentials}
                                 tags={this.state.tags}
+                                proxies={this.state.proxies}
+                                credentials={this.state.credentials}
                                 model={this.state.model}
                             />
                             : null

@@ -11,8 +11,9 @@ import {
     Select,
     Switch,
     Tooltip,
-    Typography
+    Typography,
 } from "antd/lib/index";
+import { notification } from 'antd/es';
 import {ExclamationCircleOutlined} from "@ant-design/icons";
 import {isEmpty} from "../../utils/utils";
 
@@ -45,7 +46,7 @@ const TELENETFormItemLayout = {
     wrapperCol: {span: 16},
 };
 
-const AssetModal = function ({title, visible, handleOk, handleCancel, confirmLoading, credentials, tags, model}) {
+const AssetModal = function ({title, visible, handleOk, handleCancel, confirmLoading, tags, proxies, credentials, model}) {
 
     const [form] = Form.useForm();
 
@@ -69,6 +70,16 @@ const AssetModal = function ({title, visible, handleOk, handleCancel, confirmLoa
             if (model[key] === '-') {
                 model[key] = '';
             }
+        }
+    }
+
+    const handleProxyTypeChange = v => {
+        if (v !== "") {
+            notification.info({
+                message: '注意',
+                description: '当前跳板代理仅支持原生SSH链接',
+                placement: 'topRight',
+            });
         }
     }
 
@@ -176,6 +187,17 @@ const AssetModal = function ({title, visible, handleOk, handleCancel, confirmLoa
                         <Form.Item label="端口号" name='port' rules={[{required: true, message: '请输入资产端口'}]}>
                             <InputNumber min={1} max={65535} placeholder='TCP端口'/>
                         </Form.Item>
+
+                        {
+                            <Form.Item label="跳板代理" name='proxyID'>
+                                <Select onChange={handleProxyTypeChange} defaultValue=''>
+                                    <Option key="no-proxy" value="">不使用</Option>
+                                    {proxies.items.map(item => {
+                                        return (<Option key={item.id} value={item.id}>{item.name}</Option>)
+                                    })}
+                                </Select>
+                            </Form.Item>
+                        }
 
                         {
                             protocol === 'kubernetes' ? <>

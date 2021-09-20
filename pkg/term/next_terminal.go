@@ -2,6 +2,7 @@ package term
 
 import (
 	"io"
+	"next-terminal/pkg/proxy"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -16,9 +17,9 @@ type NextTerminal struct {
 	NextWriter *NextWriter
 }
 
-func NewNextTerminal(ip string, port int, username, password, privateKey, passphrase string, rows, cols int, recording string) (*NextTerminal, error) {
+func NewNextTerminal(ip string, port int, proxyType proxy.Type, proxyConfig *proxy.Config, username, password, privateKey, passphrase string, rows, cols int, recording string) (*NextTerminal, error) {
 
-	sshClient, err := NewSshClient(ip, port, username, password, privateKey, passphrase)
+	sshClient, err := NewSshClient(ip, port, proxyType, proxyConfig, username, password, privateKey, passphrase)
 	if err != nil {
 		return nil, err
 	}

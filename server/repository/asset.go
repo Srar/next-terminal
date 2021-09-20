@@ -38,6 +38,12 @@ func (r AssetRepository) FindByProtocol(protocol string) (o []model.Asset, err e
 	return
 }
 
+// FindByProxyID 根据给定的ProxyID查找对应资产
+func (r AssetRepository) FindByProxyID(proxyID string) (o []model.Asset, err error) {
+	err = r.DB.Where("proxy_id = ?", proxyID).Find(&o).Error
+	return
+}
+
 func (r AssetRepository) FindByProtocolAndIds(protocol string, assetIds []string) (o []model.Asset, err error) {
 	err = r.DB.Where("protocol = ? and id in ?", protocol, assetIds).Find(&o).Error
 	return
@@ -253,6 +259,12 @@ func (r AssetRepository) FindByIdAndDecrypt(id string) (o model.Asset, err error
 func (r AssetRepository) UpdateById(o *model.Asset, id string) error {
 	o.ID = id
 	return r.DB.Updates(o).Error
+}
+
+// EmptyProxyByProxyID 清空正在使用给定ProxyID的代理配置
+func (r AssetRepository) EmptyProxyByProxyID(proxyID string) error {
+	sql := "update assets set proxy_id = '' where proxy_id = ?"
+	return r.DB.Exec(sql, proxyID).Error
 }
 
 func (r AssetRepository) UpdateActiveById(active bool, id string) error {
