@@ -268,6 +268,16 @@ class Credential extends Component {
     batchDelete = async () => {
         this.setState({ delBtnLoading: true });
         try {
+            for (const id of this.state.selectedRowKeys) {
+                const usageResult = await request.get(`/proxies/usageDetail/${id}`);
+                if (usageResult.code !== 1) {
+                    return message.error('删除失败 :( ' + usageResult.message, 10);
+                }
+                if (usageResult.data.total > 0) {
+                    return message.error('删除失败 :( 所选中的跳板代理正在被使用, 无法使用批量删除功能', 10);
+                }
+            }
+
             let result = await request.delete('/proxies/' + this.state.selectedRowKeys.join(','));
             if (result.code === 1) {
                 message.success('操作成功', 3);
