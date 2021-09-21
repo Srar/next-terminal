@@ -218,8 +218,8 @@ func (r ShellJob) Run() {
 			proxyConfig = &proxy.Config{
 				Host:     p.Host,
 				Port:     p.Port,
-				Username: p.Username,
-				Password: p.Password,
+				Username: *p.Username,
+				Password: *p.Password,
 				DialHost: ip,
 				DialPort: port,
 			}

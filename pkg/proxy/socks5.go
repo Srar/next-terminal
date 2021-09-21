@@ -1,30 +1,71 @@
 package proxy
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"net"
 	"time"
 )
 
-func DialWithSocks5(config *Config) (net.Conn, error) {
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", config.Host, config.Port), time.Second*5)
+const (
+	authMethodNone             = byte(0x00)
+	authMethodUsernamePassword = byte(0x02)
+)
+
+func DialWithSocks5(config *Config) (conn net.Conn, err error) {
+	conn, err = net.DialTimeout("tcp", fmt.Sprintf("%s:%d", config.Host, config.Port), time.Second*5)
+	if err != nil {
+		return nil, err
+	}
+	conn.SetReadDeadline(time.Now().Add(time.Second * 5))
+
+	defer func() {
+		if err != nil && conn != nil {
+			conn.Close()
+		}
+	}()
+
+	authenticationMethod := authMethodNone
+	if config.Username != "" || config.Password != "" {
+		authenticationMethod = authMethodUsernamePassword
+	}
+	_, err = conn.Write([]byte{0x05, 0x01, authenticationMethod})
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = conn.Write([]byte{0x05, 0x01, 0x00})
-	if err != nil {
-		return nil, err
-	}
-
-	handshakeResponse := make([]byte, 2)
-	n, err := conn.Read(handshakeResponse)
+	authenticationResponse := make([]byte, 2)
+	n, err := conn.Read(authenticationResponse)
 	if err != nil {
 		return nil, err
 	}
 	if n != 2 {
 		return nil, fmt.Errorf("failed to handshake with server. ")
+	}
+	if authenticationResponse[1] == 0xff {
+		return nil, fmt.Errorf("no acceptable authentication method. ")
+	}
+
+	if authenticationMethod == authMethodUsernamePassword {
+		b := bytes.Buffer{}
+		b.Write([]byte{0x01})
+		b.Write([]byte{byte(len(config.Username))})
+		b.Write([]byte(config.Username))
+		b.Write([]byte{byte(len(config.Password))})
+		b.Write([]byte(config.Password))
+		conn.Write(b.Bytes())
+
+		 n, err = conn.Read(authenticationResponse)
+		 if err != nil {
+			 return nil, err
+		 }
+		 if n != 2 {
+			 return nil, fmt.Errorf("failed to handshake with server. ")
+		 }
+		 if authenticationResponse[1] != 0x00 {
+			 return nil, fmt.Errorf("failed to handshake due to wrong username or password. ")
+		 }
 	}
 
 	parsedIPv4 := net.ParseIP(config.DialHost)
@@ -68,5 +109,6 @@ func DialWithSocks5(config *Config) (net.Conn, error) {
 		return nil, fmt.Errorf("the server response that can't connect to remote. ")
 	}
 
+	conn.SetReadDeadline(time.Time{})
 	return conn, nil
 }

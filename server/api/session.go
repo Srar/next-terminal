@@ -232,8 +232,8 @@ func SessionCreateEndpoint(c echo.Context) error {
 		session.ProxyType = proxy.Type
 		session.ProxyHost = proxy.Host
 		session.ProxyPort = proxy.Port
-		session.ProxyUsername = proxy.Username
-		session.ProxyPassword = proxy.Password
+		session.ProxyUsername = *proxy.Username
+		session.ProxyPassword = *proxy.Password
 	}
 
 	if err := sessionRepository.Create(session); err != nil {

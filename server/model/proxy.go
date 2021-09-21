@@ -11,8 +11,8 @@ type Proxy struct {
 	Type     proxy.Type     `gorm:"type:varchar(191)" json:"type"`
 	Host     string         `gorm:"type:varchar(191)" json:"host"`
 	Port     int            `gorm:"type:SMALLINT UNSIGNED" json:"port"`
-	Username string         `gorm:"type:varchar(191)" json:"username"`
-	Password string         `gorm:"type:varchar(191)" json:"password"`
+	Username *string        `gorm:"type:varchar(191)" json:"username"`
+	Password *string        `gorm:"type:varchar(191)" json:"password"`
 	Created  utils.JsonTime `json:"created"`
 }
 
