@@ -224,8 +224,8 @@ func SessionCreateEndpoint(c echo.Context) error {
 		}
 	}
 
-	if asset.ProxyID != "" {
-		proxy, err := proxyRepository.FindById(asset.ProxyID)
+	if *asset.ProxyID != "" {
+		proxy, err := proxyRepository.FindById(*asset.ProxyID)
 		if err != nil {
 			return err
 		}

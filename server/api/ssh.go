@@ -89,7 +89,7 @@ func SSHEndpoint(c echo.Context) (err error) {
 		ip         = session.IP
 		port       = session.Port
 
-		proxyType   = proxy.Type(session.ProxyType)
+		proxyType   = session.ProxyType
 		proxyConfig = &proxy.Config{
 			Host:     session.ProxyHost,
 			Port:     session.ProxyPort,

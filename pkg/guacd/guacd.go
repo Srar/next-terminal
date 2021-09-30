@@ -4,13 +4,18 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net"
+	"next-terminal/pkg/proxy"
+	"strconv"
 	"strings"
+	"time"
 )
 
 const (
 	Host                = "host"
 	Port                = "port"
+	NextTerminalHost    = "next-terminal-host"
 	EnableRecording     = "enable-recording"
 	RecordingPath       = "recording-path"
 	CreateRecordingPath = "create-recording-path"
@@ -133,7 +138,24 @@ type Tunnel struct {
 	IsOpen bool
 }
 
-func NewTunnel(address string, config Configuration) (ret *Tunnel, err error) {
+func NewTunnel(address string, config Configuration, nextTerminalAddr string, proxyType proxy.Type, proxyConfig *proxy.Config) (ret *Tunnel, err error) {
+	// 如果选择了通过跳板代理访问的话
+	// 在本机用简单暴力的方式随机生成 1024 ~ 65535 的端口
+	// Guacd 连接到对应生成的端口上后将数据转发至代理
+	if proxyType != proxy.TypeNone {
+		r := rand.New(rand.NewSource(time.Now().Unix()))
+		for i := 0; ; i++ {
+			localProxyPort := r.Intn(0xffff-1024) + 1024
+			if newDisposableProxyForwarder(time.Second*10, localProxyPort, proxyType, proxyConfig) == nil {
+				config.SetParameter("hostname", nextTerminalAddr)
+				config.SetParameter("port", strconv.Itoa(localProxyPort))
+				break
+			}
+			if i > 10 {
+				return nil, errors.New("Failed to alloc local proxy port. ")
+			}
+		}
+	}
 
 	conn, err := net.Dial("tcp", address)
 	if err != nil {

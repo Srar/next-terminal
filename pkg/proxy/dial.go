@@ -8,12 +8,13 @@ import (
 type Type string
 
 const (
+	TypeNone = ""
 	TypeSocks5 = "socks5"
 )
 
 func (p Type) Valid() bool {
 	switch p {
-	case TypeSocks5:
+	case TypeNone, TypeSocks5:
 		return true
 	}
 	return false

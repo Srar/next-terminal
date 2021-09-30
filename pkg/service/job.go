@@ -208,8 +208,8 @@ func (r ShellJob) Run() {
 			}
 		}
 
-		if asset.ProxyID != "" {
-			p, err := r.jobService.proxiesRepository.FindById(asset.ProxyID)
+		if *asset.ProxyID != "" {
+			p, err := r.jobService.proxiesRepository.FindById(*asset.ProxyID)
 			if err != nil {
 				msgChan <- fmt.Sprintf("资产「%v」Shell执行失败，查询跳板代理失败「%v」", assets[i].Name, err.Error())
 				return

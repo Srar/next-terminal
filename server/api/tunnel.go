@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"next-terminal/pkg/proxy"
 	"path"
 	"strconv"
 
@@ -165,8 +166,18 @@ func TunEndpoint(c echo.Context) error {
 		Tunnel:    nil,
 	}
 
+	proxyType := session.ProxyType
+	proxyConfig := &proxy.Config{
+		Host:     session.ProxyHost,
+		Port:     session.ProxyPort,
+		Username: session.ProxyUsername,
+		Password: session.ProxyPassword,
+		DialHost: session.IP,
+		DialPort: session.Port,
+	}
+
 	tunnelAddr := propertyMap[guacd.Host] + ":" + propertyMap[guacd.Port]
-	tun.Tunnel, err = guacd.NewTunnel(tunnelAddr, configuration)
+	tun.Tunnel, err = guacd.NewTunnel(tunnelAddr, configuration, propertyMap[guacd.NextTerminalHost], proxyType, proxyConfig)
 	if err != nil {
 		if connectionId == "" {
 			CloseSessionById(sessionId, NewTunnelError, err.Error())

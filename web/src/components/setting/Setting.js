@@ -486,6 +486,20 @@ class Setting extends Component {
 
                                 <Form.Item
                                     {...formItemLayout}
+                                    name="next-terminal-host"
+                                    label="Next Terminal 地址(用于提供给Guacd代理)"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Next Terminal 地址',
+                                        },
+                                    ]}
+                                >
+                                    <Input type='text' placeholder="请输入Next Terminal 地址"/>
+                                </Form.Item>
+
+                                <Form.Item
+                                    {...formItemLayout}
                                     name="enable-recording"
                                     label="开启录屏"
                                     valuePropName="checked"
