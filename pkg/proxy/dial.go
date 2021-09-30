@@ -8,22 +8,25 @@ import (
 type Type string
 
 const (
-	TypeNone = ""
+	TypeNone   = ""
 	TypeSocks5 = "socks5"
+	TypeHTTP   = "http"
 )
 
 func (p Type) Valid() bool {
 	switch p {
-	case TypeNone, TypeSocks5:
+	case TypeNone, TypeSocks5, TypeHTTP:
 		return true
 	}
 	return false
 }
 
-func Dial(t Type, c *Config) (net.Conn, error)  {
+func Dial(t Type, c *Config) (net.Conn, error) {
 	switch t {
 	case TypeSocks5:
 		return DialWithSocks5(c)
+	case TypeHTTP:
+		return DialWithHTTP(c)
 	}
 	return nil, fmt.Errorf("unsupported proxy. ")
 }
