@@ -13,6 +13,7 @@ import (
 	"image"
 	"image/png"
 	"net"
+	"next-terminal/pkg/proxy"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -87,25 +88,33 @@ func UUID() string {
 	return v4.String()
 }
 
-func Tcping(ip string, port int) bool {
+func TCPing(ip string, port int, proxyType proxy.Type, proxyConfig *proxy.Config) bool {
 	var (
-		conn    net.Conn
-		err     error
 		address string
 	)
-	strPort := strconv.Itoa(port)
+
+	// 兼容IPv6
 	if strings.HasPrefix(ip, "[") && strings.HasSuffix(ip, "]") {
-		// 如果用户有填写中括号就不再拼接
-		address = fmt.Sprintf("%s:%s", ip, strPort)
+		address = fmt.Sprintf("%s:%d", ip, port)
 	} else {
-		address = fmt.Sprintf("[%s]:%s", ip, strPort)
+		address = fmt.Sprintf("[%s]:%d", ip, port)
 	}
-	if conn, err = net.DialTimeout("tcp", address, 2*time.Second); err != nil {
+
+	if proxyType == proxy.TypeNone {
+		conn, err := net.DialTimeout("tcp", address, 5*time.Second)
+		if err != nil {
+			return false
+		}
+		defer conn.Close()
+		return true
+	}
+
+	conn, err := proxy.Dial(proxyType, proxyConfig)
+	if err != nil {
 		return false
 	}
-	defer func() {
-		_ = conn.Close()
-	}()
+	defer conn.Close()
+
 	return true
 }
 
@@ -117,7 +126,7 @@ func ImageToBase64Encode(img image.Image) (string, error) {
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
 
-// 判断所给路径文件/文件夹是否存在
+// FileExists 判断所给路径文件/文件夹是否存在
 func FileExists(path string) bool {
 	_, err := os.Stat(path) //os.Stat获取文件信息
 	if err != nil {
@@ -126,7 +135,7 @@ func FileExists(path string) bool {
 	return true
 }
 
-// 判断所给路径是否为文件夹
+// IsDir 判断所给路径是否为文件夹
 func IsDir(path string) bool {
 	s, err := os.Stat(path)
 	if err != nil {
@@ -135,7 +144,7 @@ func IsDir(path string) bool {
 	return s.IsDir()
 }
 
-// 判断所给路径是否为文件
+// IsFile 判断所给路径是否为文件
 func IsFile(path string) bool {
 	return !IsDir(path)
 }
@@ -144,7 +153,7 @@ func GetParentDirectory(directory string) string {
 	return filepath.Dir(directory)
 }
 
-// 去除重复元素
+// Distinct 去除重复元素
 func Distinct(a []string) []string {
 	result := make([]string, 0, len(a))
 	temp := map[string]struct{}{}
@@ -157,7 +166,7 @@ func Distinct(a []string) []string {
 	return result
 }
 
-// 排序+拼接+摘要
+// Sign 排序+拼接+摘要
 func Sign(a []string) string {
 	sort.Strings(a)
 	data := []byte(strings.Join(a, ""))

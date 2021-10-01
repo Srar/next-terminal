@@ -13,7 +13,6 @@ import {
     Tooltip,
     Typography,
 } from "antd/lib/index";
-import { notification } from 'antd/es';
 import {ExclamationCircleOutlined} from "@ant-design/icons";
 import {isEmpty} from "../../utils/utils";
 

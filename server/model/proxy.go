@@ -16,6 +16,17 @@ type Proxy struct {
 	Created  utils.JsonTime `json:"created"`
 }
 
-func (r *Proxy) TableName() string {
+func (p *Proxy) TableName() string {
 	return "proxies"
+}
+
+func (p *Proxy) ToProxyConfig(dialHost string, dialPort int) *proxy.Config {
+	return &proxy.Config{
+		Host:     p.Host,
+		Port:     p.Port,
+		Username: *p.Username,
+		Password: *p.Password,
+		DialHost: dialHost,
+		DialPort: dialPort,
+	}
 }

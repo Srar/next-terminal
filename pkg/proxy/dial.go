@@ -8,11 +8,11 @@ import (
 type Type string
 
 const (
-	TypeNone   = ""
-	TypeSocks5 = "socks5"
-	TypeHTTP   = "http"
-	TypeHTTPS  = "https"
-	TypeSSH    = "ssh"
+	TypeNone   Type = ""
+	TypeSocks5 Type = "socks5"
+	TypeHTTP   Type = "http"
+	TypeHTTPS  Type = "https"
+	TypeSSH    Type = "ssh"
 )
 
 func (p Type) Valid() bool {

@@ -95,6 +95,7 @@ func (r CheckAssetStatusJob) Run() {
 	}
 
 	var assets []model.Asset
+	proxyCache := make(map[string]*model.Proxy)
 	if r.Mode == constant.JobModeAll {
 		assets, _ = r.jobService.assetRepository.FindAll()
 	} else {
@@ -105,12 +106,53 @@ func (r CheckAssetStatusJob) Run() {
 		return
 	}
 
+	// 获取全部资产的跳板代理信息
+	{
+		proxyIDList := make([]string, 0)
+		proxyIDMap := make(map[string]struct{})
+		for i := range assets {
+			asset := assets[i]
+			if *asset.ProxyID == "" {
+				continue
+			}
+			proxyIDMap[*asset.ProxyID] = struct{}{}
+		}
+		for k := range proxyIDMap {
+			proxyIDList = append(proxyIDList, k)
+		}
+		proxies, err := r.jobService.proxiesRepository.FindByIds(proxyIDList)
+		if err != nil {
+			jobLog := model.JobLog{
+				ID:        utils.UUID(),
+				JobId:     r.ID,
+				Timestamp: utils.NowJsonTime(),
+				Message:   fmt.Sprintf("获取资产跳板代理失败%s", err),
+			}
+			_ = r.jobService.jobLogRepository.Create(&jobLog)
+			return
+		}
+		for i := range proxies {
+			p := proxies[i]
+			proxyCache[p.ID] = &p
+		}
+	}
+
 	msgChan := make(chan string)
 	for i := range assets {
 		asset := assets[i]
 		go func() {
+			var proxyType proxy.Type
+			var proxyConfig *proxy.Config
+			if *asset.ProxyID != "" {
+				p, exist := proxyCache[*asset.ProxyID]
+				if exist {
+					proxyType = p.Type
+					proxyConfig = p.ToProxyConfig(asset.IP, asset.Port)
+				}
+			}
+
 			t1 := time.Now()
-			active := utils.Tcping(asset.IP, asset.Port)
+			active := utils.TCPing(asset.IP, asset.Port, proxyType, proxyConfig)
 			elapsed := time.Since(t1)
 			msg := fmt.Sprintf("资产「%v」存活状态检测完成，存活「%v」，耗时「%v」", asset.Name, active, elapsed)
 
@@ -215,14 +257,7 @@ func (r ShellJob) Run() {
 				return
 			}
 			proxyType = p.Type
-			proxyConfig = &proxy.Config{
-				Host:     p.Host,
-				Port:     p.Port,
-				Username: *p.Username,
-				Password: *p.Password,
-				DialHost: ip,
-				DialPort: port,
-			}
+			proxyConfig = p.ToProxyConfig(asset.IP, asset.Port)
 		}
 
 		go func() {

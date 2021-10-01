@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"errors"
+	"next-terminal/pkg/proxy"
 	"strconv"
 	"strings"
 
@@ -43,7 +44,7 @@ func AssetCreateEndpoint(c echo.Context) error {
 
 	// 创建后自动检测资产是否存活
 	go func() {
-		active := utils.Tcping(item.IP, item.Port)
+		active := utils.TCPing(item.IP, item.Port,  proxy.TypeNone, nil)
 		_ = assetRepository.UpdateActiveById(active, item.ID)
 	}()
 
@@ -112,7 +113,7 @@ func AssetImportEndpoint(c echo.Context) error {
 				successCount++
 				// 创建后自动检测资产是否存活
 				go func() {
-					active := utils.Tcping(asset.IP, asset.Port)
+					active := utils.TCPing(asset.IP, asset.Port, proxy.TypeNone, nil)
 					_ = assetRepository.UpdateActiveById(active, asset.ID)
 				}()
 			}
@@ -259,18 +260,29 @@ func AssetGetEndpoint(c echo.Context) (err error) {
 	return Success(c, itemMap)
 }
 
-func AssetTcpingEndpoint(c echo.Context) (err error) {
+func AssetTCPingEndpoint(c echo.Context) (err error) {
 	id := c.Param("id")
 
-	var item model.Asset
-	if item, err = assetRepository.FindById(id); err != nil {
+	var asset model.Asset
+	if asset, err = assetRepository.FindById(id); err != nil {
 		return err
 	}
+	proxyType := proxy.TypeNone
+	proxyConfig := &proxy.Config{}
 
-	active := utils.Tcping(item.IP, item.Port)
+	if *asset.ProxyID != "" {
+		proxy, err := proxyRepository.FindById(*asset.ProxyID)
+		if err != nil {
+			return err
+		}
+		proxyType = proxy.Type
+		proxyConfig = proxy.ToProxyConfig(asset.IP, asset.Port)
+	}
 
-	if item.Active != active {
-		if err := assetRepository.UpdateActiveById(active, item.ID); err != nil {
+	active := utils.TCPing(asset.IP, asset.Port, proxyType, proxyConfig)
+
+	if asset.Active != active {
+		if err := assetRepository.UpdateActiveById(active, asset.ID); err != nil {
 			return err
 		}
 	}

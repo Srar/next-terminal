@@ -268,7 +268,7 @@ func CreateNextTerminalBySession(session model.Session) (*term.NextTerminal, err
 		ip         = session.IP
 		port       = session.Port
 
-		proxyType   = proxy.Type(session.ProxyType)
+		proxyType   = session.ProxyType
 		proxyConfig = &proxy.Config{
 			Host:     session.ProxyHost,
 			Port:     session.ProxyPort,

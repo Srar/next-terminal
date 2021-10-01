@@ -20,6 +20,11 @@ func (p ProxyRepository) FindById(id string) (o model.Proxy, err error) {
 	return
 }
 
+func (p ProxyRepository) FindByIds(proxyIds []string) (o []model.Proxy, err error) {
+	err = p.DB.Where("id in ?", proxyIds).Find(&o).Error
+	return
+}
+
 func (p ProxyRepository) Find(pageIndex, pageSize int, name, proxyType, order, field string) (o []model.Proxy, total int64, err error) {
 	t := model.Proxy{}
 	db := p.DB.Table(t.TableName())

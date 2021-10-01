@@ -130,7 +130,7 @@ func SetupRoutes(db *gorm.DB) *echo.Echo {
 		assets.POST("", AssetCreateEndpoint)
 		assets.POST("/import", Admin(AssetImportEndpoint))
 		assets.GET("/paging", AssetPagingEndpoint)
-		assets.POST("/:id/tcping", AssetTcpingEndpoint)
+		assets.POST("/:id/tcping", AssetTCPingEndpoint)
 		assets.PUT("/:id", AssetUpdateEndpoint)
 		assets.DELETE("/:id", AssetDeleteEndpoint)
 		assets.GET("/:id", AssetGetEndpoint)
