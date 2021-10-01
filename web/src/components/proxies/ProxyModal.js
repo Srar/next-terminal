@@ -28,7 +28,7 @@ const ProxyModal = ({title, visible, handleOk, handleCancel, confirmLoading, mod
         }
     }
 
-    let [type, setType] = useState(model.type);
+    let [,setType] = useState(model.type);
 
     const handleAccountTypeChange = v => {
         setType(v);
@@ -88,7 +88,7 @@ const ProxyModal = ({title, visible, handleOk, handleCancel, confirmLoading, mod
                     <Input/>
                 </Form.Item>
                 <Form.Item label="代理认证密码" name='password'>
-                    <Input/>
+                    <Input.Password/>
                 </Form.Item>
 
             </Form>

@@ -18,7 +18,7 @@ func DialWithHTTP(config *Config) (conn net.Conn, err error) {
 
 	host := fmt.Sprintf("%s:%d", config.DialHost, config.DialPort)
 	conn.Write([]byte(fmt.Sprintf("CONNECT %s HTTP/1.1\r\n", host)))
-	conn.Write([]byte(fmt.Sprintf("Host:%s\r\n", host)))
+	conn.Write([]byte(fmt.Sprintf("Host: %s\r\n", host)))
 	if config.Username != "" || config.Password != "" {
 		encoded := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", config.Username, config.Password)))
 		conn.Write([]byte(fmt.Sprintf("Proxy-Authorization: basic %s\r\n", encoded)))

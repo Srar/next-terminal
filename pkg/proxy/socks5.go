@@ -81,7 +81,7 @@ func DialWithSocks5(config *Config) (conn net.Conn, err error) {
 		command[2] = 0x00
 		command[3] = 0x03
 		command[4] = byte(len(config.DialHost))
-		copy(command[5:], []byte(config.DialHost))
+		copy(command[5:], config.DialHost)
 		binary.BigEndian.PutUint16(command[5+len(config.DialHost):], uint16(config.DialPort))
 	} else {
 		command = make([]byte, 4+4+2)
