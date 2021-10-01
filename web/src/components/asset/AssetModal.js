@@ -73,16 +73,6 @@ const AssetModal = function ({title, visible, handleOk, handleCancel, confirmLoa
         }
     }
 
-    const handleProxyTypeChange = v => {
-        if (v !== "") {
-            notification.info({
-                message: '注意',
-                description: '当前跳板代理仅支持原生SSH链接',
-                placement: 'topRight',
-            });
-        }
-    }
-
     const handleProtocolChange = e => {
         setProtocol(e.target.value)
         let port;
@@ -190,7 +180,7 @@ const AssetModal = function ({title, visible, handleOk, handleCancel, confirmLoa
 
                         {
                             <Form.Item label="跳板代理" name='proxyID'>
-                                <Select onChange={handleProxyTypeChange} defaultValue=''>
+                                <Select defaultValue=''>
                                     <Option key="no-proxy" value="">不使用</Option>
                                     {proxies.items.map(item => {
                                         return (<Option key={item.id} value={item.id}>{item.name}</Option>)
