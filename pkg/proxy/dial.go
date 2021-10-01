@@ -11,12 +11,13 @@ const (
 	TypeNone   = ""
 	TypeSocks5 = "socks5"
 	TypeHTTP   = "http"
-	TypeSSH = "ssh"
+	TypeHTTPS  = "https"
+	TypeSSH    = "ssh"
 )
 
 func (p Type) Valid() bool {
 	switch p {
-	case TypeNone, TypeSocks5, TypeHTTP, TypeSSH:
+	case TypeNone, TypeSocks5, TypeHTTP, TypeSSH, TypeHTTPS:
 		return true
 	}
 	return false
@@ -28,6 +29,8 @@ func Dial(t Type, c *Config) (net.Conn, error) {
 		return DialWithSocks5(c)
 	case TypeHTTP:
 		return DialWithHTTP(c)
+	case TypeHTTPS:
+		return DialWithHTTPS(c)
 	case TypeSSH:
 		return DialWithSSH(c)
 	}
