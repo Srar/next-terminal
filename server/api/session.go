@@ -224,6 +224,18 @@ func SessionCreateEndpoint(c echo.Context) error {
 		}
 	}
 
+	if *asset.ProxyID != "" {
+		proxy, err := proxyRepository.FindById(*asset.ProxyID)
+		if err != nil {
+			return err
+		}
+		session.ProxyType = proxy.Type
+		session.ProxyHost = proxy.Host
+		session.ProxyPort = proxy.Port
+		session.ProxyUsername = *proxy.Username
+		session.ProxyPassword = *proxy.Password
+	}
+
 	if err := sessionRepository.Create(session); err != nil {
 		return err
 	}

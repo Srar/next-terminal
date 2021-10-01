@@ -40,6 +40,7 @@ var (
 	jobRepository            *repository.JobRepository
 	jobLogRepository         *repository.JobLogRepository
 	loginLogRepository       *repository.LoginLogRepository
+	proxyRepository          *repository.ProxyRepository
 
 	jobService        *service.JobService
 	propertyService   *service.PropertyService
@@ -129,7 +130,7 @@ func SetupRoutes(db *gorm.DB) *echo.Echo {
 		assets.POST("", AssetCreateEndpoint)
 		assets.POST("/import", Admin(AssetImportEndpoint))
 		assets.GET("/paging", AssetPagingEndpoint)
-		assets.POST("/:id/tcping", AssetTcpingEndpoint)
+		assets.POST("/:id/tcping", AssetTCPingEndpoint)
 		assets.PUT("/:id", AssetUpdateEndpoint)
 		assets.DELETE("/:id", AssetDeleteEndpoint)
 		assets.GET("/:id", AssetGetEndpoint)
@@ -218,6 +219,17 @@ func SetupRoutes(db *gorm.DB) *echo.Echo {
 		securities.GET("/:id", SecurityGetEndpoint)
 	}
 
+	proxies := e.Group("/proxies", Admin)
+	{
+		proxies.GET("", ProxiesAllEndpoint)
+		proxies.GET("/:id", ProxiesGetEndpoint)
+		proxies.GET("/paging", ProxiesPagingEndpoint)
+		proxies.GET("/usageDetail/:id", ProxiesUsageDetailAssetEndpoint)
+		proxies.POST("", ProxiesCreateEndpoint)
+		proxies.PUT("/:id", ProxiesUpdateEndpoint)
+		proxies.DELETE("/:id", ProxiesDeleteEndpoint)
+	}
+
 	return e
 }
 
@@ -246,10 +258,11 @@ func InitRepository(db *gorm.DB) {
 	jobRepository = repository.NewJobRepository(db)
 	jobLogRepository = repository.NewJobLogRepository(db)
 	loginLogRepository = repository.NewLoginLogRepository(db)
+	proxyRepository = repository.NewProxyRepository(db)
 }
 
 func InitService() {
-	jobService = service.NewJobService(jobRepository, jobLogRepository, assetRepository, credentialRepository)
+	jobService = service.NewJobService(jobRepository, jobLogRepository, assetRepository, credentialRepository, proxyRepository)
 	propertyService = service.NewPropertyService(propertyRepository)
 	userService = service.NewUserService(userRepository, loginLogRepository)
 	sessionService = service.NewSessionService(sessionRepository)
@@ -411,7 +424,7 @@ func SetupDB() *gorm.DB {
 			log.WithError(err).Panic("连接数据库异常")
 		}
 		if err := db.Set("gorm:table_options", "CHARSET=utf8 COLLATE utf8_general_ci").AutoMigrate(&model.User{}, &model.Asset{}, &model.AssetAttribute{}, &model.Session{}, &model.Command{},
-			&model.Credential{}, &model.Property{}, &model.ResourceSharer{}, &model.UserGroup{}, &model.UserGroupMember{},
+			&model.Proxy{}, &model.Credential{}, &model.Property{}, &model.ResourceSharer{}, &model.UserGroup{}, &model.UserGroupMember{},
 			&model.LoginLog{}, &model.Num{}, &model.Job{}, &model.JobLog{}, &model.AccessSecurity{}); err != nil {
 			log.WithError(err).Panic("初始化数据库表结构异常")
 		}
@@ -422,7 +435,7 @@ func SetupDB() *gorm.DB {
 		if err != nil {
 			log.WithError(err).Panic("连接数据库异常")
 		}
-		if err := db.AutoMigrate(&model.User{}, &model.Asset{}, &model.AssetAttribute{}, &model.Session{}, &model.Command{},
+		if err := db.AutoMigrate(&model.Proxy{}, &model.User{}, &model.Asset{}, &model.AssetAttribute{}, &model.Session{}, &model.Command{},
 			&model.Credential{}, &model.Property{}, &model.ResourceSharer{}, &model.UserGroup{}, &model.UserGroupMember{},
 			&model.LoginLog{}, &model.Num{}, &model.Job{}, &model.JobLog{}, &model.AccessSecurity{}); err != nil {
 			log.WithError(err).Panic("初始化数据库表结构异常")

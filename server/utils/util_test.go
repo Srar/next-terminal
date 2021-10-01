@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net"
+	"next-terminal/pkg/proxy"
 	"testing"
 
 	"next-terminal/server/utils"
@@ -18,19 +19,19 @@ func TestTcping(t *testing.T) {
 	localhost6 := "::1"
 	conn, err := net.Listen("tcp", ":9999")
 	assert.NoError(t, err)
-	ip4resfalse := utils.Tcping(localhost4, 22)
+	ip4resfalse := utils.TCPing(localhost4, 22, proxy.TypeNone, nil)
 	assert.Equal(t, false, ip4resfalse)
 
-	ip4res := utils.Tcping(localhost4, 9999)
+	ip4res := utils.TCPing(localhost4, 9999, proxy.TypeNone, nil)
 	assert.Equal(t, true, ip4res)
 
-	ip6res := utils.Tcping(localhost6, 9999)
+	ip6res := utils.TCPing(localhost6, 9999, proxy.TypeNone, nil)
 	assert.Equal(t, true, ip6res)
 
-	ip4resWithBracket := utils.Tcping("["+localhost4+"]", 9999)
+	ip4resWithBracket := utils.TCPing("["+localhost4+"]", 9999, proxy.TypeNone, nil)
 	assert.Equal(t, true, ip4resWithBracket)
 
-	ip6resWithBracket := utils.Tcping("["+localhost6+"]", 9999)
+	ip6resWithBracket := utils.TCPing("["+localhost6+"]", 9999, proxy.TypeNone, nil)
 	assert.Equal(t, true, ip6resWithBracket)
 
 	defer func() {

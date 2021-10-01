@@ -2,12 +2,13 @@ package term
 
 import (
 	"fmt"
+	"next-terminal/pkg/proxy"
 	"time"
 
 	"golang.org/x/crypto/ssh"
 )
 
-func NewSshClient(ip string, port int, username, password, privateKey, passphrase string) (*ssh.Client, error) {
+func NewSshClient(ip string, port int, proxyType proxy.Type, proxyConfig *proxy.Config, username, password, privateKey, passphrase string) (*ssh.Client, error) {
 	var authMethod ssh.AuthMethod
 	if username == "-" || username == "" {
 		username = "root"
@@ -42,7 +43,7 @@ func NewSshClient(ip string, port int, username, password, privateKey, passphras
 	}
 
 	config := &ssh.ClientConfig{
-		Timeout:         1 * time.Second,
+		Timeout:         5 * time.Second,
 		User:            username,
 		Auth:            []ssh.AuthMethod{authMethod},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
@@ -50,5 +51,19 @@ func NewSshClient(ip string, port int, username, password, privateKey, passphras
 
 	addr := fmt.Sprintf("%s:%d", ip, port)
 
-	return ssh.Dial("tcp", addr, config)
+	// 不使用代理
+	if proxyType == "" {
+		return ssh.Dial("tcp", addr, config)
+	}
+
+	// 使用代理
+	proxyConnection, err := proxy.Dial(proxyType, proxyConfig)
+	if err != nil {
+		return nil, err
+	}
+	c, chans, reqs, err := ssh.NewClientConn(proxyConnection, addr, config)
+	if err != nil {
+		return nil, err
+	}
+	return ssh.NewClient(c, chans, reqs), nil
 }

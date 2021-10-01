@@ -14,4 +14,5 @@ var (
 	jobRepository            *JobRepository
 	jobLogRepository         *JobLogRepository
 	loginLogRepository       *LoginLogRepository
+	proxyRepository          *ProxyRepository
 )

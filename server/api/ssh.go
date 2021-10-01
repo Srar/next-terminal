@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"next-terminal/pkg/proxy"
 	"path"
 	"strconv"
 
@@ -87,6 +88,16 @@ func SSHEndpoint(c echo.Context) (err error) {
 		passphrase = session.Passphrase
 		ip         = session.IP
 		port       = session.Port
+
+		proxyType   = session.ProxyType
+		proxyConfig = &proxy.Config{
+			Host:     session.ProxyHost,
+			Port:     session.ProxyPort,
+			Username: session.ProxyUsername,
+			Password: session.ProxyPassword,
+			DialHost: session.IP,
+			DialPort: session.Port,
+		}
 	)
 
 	recording := ""
@@ -110,11 +121,10 @@ func SSHEndpoint(c echo.Context) (err error) {
 			global.Store.Set(sessionId, observable)
 			log.Debugf("加入会话%v,当前观察者数量为：%v", session.ConnectionId, len(observers))
 		}
-
 		return err
 	}
 
-	nextTerminal, err := term.NewNextTerminal(ip, port, username, password, privateKey, passphrase, rows, cols, recording)
+	nextTerminal, err := term.NewNextTerminal(ip, port, proxyType, proxyConfig, username, password, privateKey, passphrase, rows, cols, recording)
 
 	if err != nil {
 		log.Errorf("创建SSH客户端失败：%v", err.Error())
@@ -257,6 +267,17 @@ func CreateNextTerminalBySession(session model.Session) (*term.NextTerminal, err
 		passphrase = session.Passphrase
 		ip         = session.IP
 		port       = session.Port
+
+		proxyType   = session.ProxyType
+		proxyConfig = &proxy.Config{
+			Host:     session.ProxyHost,
+			Port:     session.ProxyPort,
+			Username: session.ProxyUsername,
+			Password: session.ProxyPassword,
+			DialHost: session.IP,
+			DialPort: session.Port,
+		}
 	)
-	return term.NewNextTerminal(ip, port, username, password, privateKey, passphrase, 10, 10, "")
+
+	return term.NewNextTerminal(ip, port, proxyType, proxyConfig, username, password, privateKey, passphrase, 10, 10, "")
 }

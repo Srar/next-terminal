@@ -12,6 +12,7 @@ import OfflineSession from "./components/session/OfflineSession";
 import Login from "./components/Login";
 import DynamicCommand from "./components/command/DynamicCommand";
 import Credential from "./components/credential/Credential";
+import Proxies from "./components/proxies/Proxies";
 import {
     AuditOutlined,
     BlockOutlined,
@@ -36,6 +37,7 @@ import {
     UserSwitchOutlined,
     MenuUnfoldOutlined,
     MenuFoldOutlined,
+    ClusterOutlined,
 } from '@ant-design/icons';
 import Info from "./components/user/Info";
 import request from "./common/request";
@@ -217,6 +219,14 @@ class App extends Component {
                                             授权凭证
                                         </Link>
                                     </Menu.Item>
+                                    {
+                                        this.state.triggerMenu && isAdmin() ?
+                                            <Menu.Item key="proxies" icon={<ClusterOutlined />}>
+                                                <Link to={'/proxies'}>
+                                                    跳板代理
+                                                </Link>
+                                            </Menu.Item> : undefined
+                                    }
                                 </SubMenu>
 
                                 <SubMenu key='command-manage' title='指令管理' icon={<CodeOutlined/>}>
@@ -342,6 +352,7 @@ class App extends Component {
                             <Route path="/user-group" component={UserGroup}/>
                             <Route path="/asset" component={Asset}/>
                             <Route path="/credential" component={Credential}/>
+                            <Route path="/proxies" component={Proxies}/>
                             <Route path="/dynamic-command" component={DynamicCommand}/>
                             <Route path="/batch-command" component={BatchCommand}/>
                             <Route path="/online-session" component={OnlineSession}/>

@@ -13,6 +13,7 @@ type Asset struct {
 	AccountType  string         `json:"accountType"`
 	Username     string         `json:"username"`
 	Password     string         `json:"password"`
+	ProxyID      *string         `gorm:"index" json:"proxyID"`
 	CredentialId string         `gorm:"index" json:"credentialId"`
 	PrivateKey   string         `json:"privateKey"`
 	Passphrase   string         `json:"passphrase"`

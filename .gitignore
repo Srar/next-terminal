@@ -28,4 +28,5 @@ playground/data
 playground/drive
 playground/recording
 
-/log
+log/
+logs/

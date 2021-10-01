@@ -40,6 +40,16 @@ func (r PropertyService) InitProperties() error {
 		}
 	}
 
+	if len(propertyMap[guacd.NextTerminalHost]) == 0 {
+		property := model.Property{
+			Name:  guacd.NextTerminalHost,
+			Value: "127.0.0.1",
+		}
+		if err := r.propertyRepository.Create(&property); err != nil {
+			return err
+		}
+	}
+
 	if len(propertyMap[guacd.EnableRecording]) == 0 {
 		property := model.Property{
 			Name:  guacd.EnableRecording,
