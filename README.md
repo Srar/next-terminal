@@ -2,9 +2,9 @@
 
 ~~**注意：目前最后一个开源版是 0.5.0 版本，后续版本暂未开源。新版本 Docker 容器不再是 All in one 方式，拆分为了 guacd 和 next-terminal 两个容器。**~~
 
-~~**原上游Repo自0.5.0版本后新版本不再开源, 本着个人需求原因fork出继续维护开源版本**~
+~~**原上游Repo自0.5.0版本后新版本不再开源, 本着个人需求原因fork出继续维护开源版本**~~
 
-** 2021-10-31 上游开放了0.5.0版本后的源码, 本项目fork会基于自身需求添加或修改部分功能 **
+**2021-10-31 上游开放了0.5.0版本后的源码, 本项目fork会基于自身需求添加或修改部分功能**
 
 ![Docker image](https://github.com/dushixiang/next-terminal/workflows/Docker%20image/badge.svg?branch=master)
 
